@@ -84,3 +84,64 @@ Answer: It automatically deletes dependent records
 when their referenced parent record is hard-deleted.
 
 <!-- & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d authify_dev -->
+
+
+## SQL Injection and Parameterized Queries
+
+### 1. What is SQL Injection?
+
+SQL injection is a security vulnerability where an attacker manipulates SQL queries through malicious user input.
+
+**Example of an unsafe query:**
+
+```javascript
+const query = `SELECT * FROM users WHERE email = '${email}'`;
+```
+
+User input is directly inserted into the SQL query, which can change its intended logic.
+
+### 2. How to prevent SQL Injection?
+
+Use parameterized queries.
+
+```javascript
+const query = "SELECT * FROM users WHERE email = $1";
+
+const result = await pool.query(query, [email]);
+```
+
+- `$1` is a placeholder.
+- `[email]` supplies the user input.
+- PostgreSQL treats the supplied value as data, not executable SQL instructions.
+
+### 3. Input Validation vs SQL Injection Protection
+
+- Joi validation: Checks whether input follows expected rules.
+- Parameterized queries: Protect SQL queries from injection.
+
+Both are necessary.
+
+### 4. Practical Experiment in Authify
+
+Test input:
+
+```text
+anything' OR '1'='1
+```
+
+| Query | Result |
+|---|---|
+| Unsafe string interpolation | Returned all sample users |
+| Parameterized query | Returned no matching users |
+
+This demonstrated how SQL injection works and how parameterized queries prevent this type of attack.
+
+### 5. Important Production Rule
+
+Never directly concatenate user input into SQL queries.
+
+Always use parameterized queries for user-provided values.
+
+**Interview answer:**
+
+SQL injection is a vulnerability where attackers manipulate SQL queries through malicious input. We prevent it by using parameterized queries, input validation, and avoiding direct SQL string concatenation.
